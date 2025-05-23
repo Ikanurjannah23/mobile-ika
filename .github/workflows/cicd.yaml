@@ -2,11 +2,9 @@ name: Flutter Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
@@ -16,16 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Flutter (3.29.2)
+      - name: Set up Flutter (3.27.0)  # versi ini akan di-install
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'  # Match your local version
+          flutter-version: '3.27.0'
           cache: true
 
       - name: Validate Flutter & Dart versions
         run: |
           flutter --version
           dart --version
+
       - name: Run build APK
         run: flutter build apk --release
 
@@ -59,5 +58,5 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          APK_PATH: build/app/outputs/flutter-apk/app-release-${{ env.VERSION_NAME }}.apk
+          VERSION_NAME: ${{ env.VERSION_NAME }}  # <- pastikan ini ditambahkan
         run: python .github/send_telegram.py
