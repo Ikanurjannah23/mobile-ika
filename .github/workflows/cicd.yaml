@@ -38,6 +38,12 @@ jobs:
           mv build/app/outputs/flutter-apk/app-release.apk \
              build/app/outputs/flutter-apk/app-release-${{ env.VERSION_NAME }}.apk
 
+      - name: Debug list APK files
+        run: ls -lh build/app/outputs/flutter-apk/
+
+      - name: Debug APK size
+        run: du -h build/app/outputs/flutter-apk/app-release-${{ env.VERSION_NAME }}.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -48,7 +54,7 @@ jobs:
         id: commit_msg
         run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
 
-      - name: Set up Python for Telegram script
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
