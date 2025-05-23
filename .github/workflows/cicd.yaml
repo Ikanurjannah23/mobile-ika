@@ -28,12 +28,10 @@ jobs:
       - name: Run build APK
         run: flutter build apk --release
 
-      - name: Extract version from pubspec
-        id: extract_version
-        run: |
-          VERSION_NAME=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\n')
-          echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
-          echo "Extracted version: ${VERSION_NAME}"
+ - name: Extract version from pubspec
+  id: extract_version
+  run: |
+    echo "VERSION_NAME=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\n')" >> $GITHUB_ENV
 
       - name: Rename APK with version
         run: |
@@ -53,6 +51,11 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install requests
+- name: Debug environment variables
+  run: |
+    echo "VERSION_NAME=$VERSION_NAME"
+    echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
+    echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}"
 
       - name: Send APK to Telegram
         env:
