@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Flutter (3.27.0)  # versi ini akan di-install
+      - name: Set up Flutter (3.27.0)
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.27.0'
@@ -28,10 +28,10 @@ jobs:
       - name: Run build APK
         run: flutter build apk --release
 
- - name: Extract version from pubspec
-  id: extract_version
-  run: |
-    echo "VERSION_NAME=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\n')" >> $GITHUB_ENV
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          echo "VERSION_NAME=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\n')" >> $GITHUB_ENV
 
       - name: Rename APK with version
         run: |
@@ -44,6 +44,10 @@ jobs:
           name: app-release-${{ env.VERSION_NAME }}.apk
           path: build/app/outputs/flutter-apk/app-release-${{ env.VERSION_NAME }}.apk
 
+      - name: Get commit message
+        id: commit_msg
+        run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
       - name: Set up Python for Telegram script
         uses: actions/setup-python@v5
         with:
@@ -51,15 +55,20 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install requests
-- name: Debug environment variables
-  run: |
-    echo "VERSION_NAME=$VERSION_NAME"
-    echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
-    echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}"
+
+      - name: Debug environment variables
+        run: |
+          echo "VERSION_NAME=$VERSION_NAME"
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE"
+          echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}"
 
       - name: Send APK to Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          VERSION_NAME: ${{ env.VERSION_NAME }}  # <- pastikan ini ditambahkan
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
         run: python .github/send_telegram.py
